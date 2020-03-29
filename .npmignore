@@ -1,0 +1,8 @@
+/node_modules
+/src
+/test
+/dist/test.d.ts
+/dist/test.js
+tsconfig.json
+.eslintrc.js
+.prettierrc
