@@ -80,7 +80,7 @@ export async function runTests(...TestObjects: TestClass[]): Promise<void> {
 
     for (const TestObject of TestObjects) {
         const test = Reflect.construct(TestObject, []);
-        const prototype = Reflect.getPrototypeOf(test);
+        const prototype = Reflect.getPrototypeOf(test)!;
         const methods = Reflect.ownKeys(prototype);
 
         for (const method of methods) {
