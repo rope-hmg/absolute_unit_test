@@ -1,55 +1,61 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.runTests = exports.assertDeepNeq = exports.assertDeepEq = exports.assertNeq = exports.assertEq = exports.assert = void 0;
+exports.assert = assert;
+exports.assertEq = assertEq;
+exports.assertNeq = assertNeq;
+exports.assertDeepEq = assertDeepEq;
+exports.assertDeepNeq = assertDeepNeq;
+exports.runTests = runTests;
 const deep_cmp_1 = require("deep-cmp");
 function assert(condition, message) {
     if (!condition) {
-        throw new Error(message);
+        throw new Error(message ?? "Assertion failed!");
     }
 }
-exports.assert = assert;
-function assertEq(left, right) {
+function assertEq(left, right, message) {
     if (!Object.is(left, right)) {
-        throw new Error(`expected ${left.toString()} to equal ${right.toString()}`);
+        throw build_error(left, right, false, message);
     }
 }
-exports.assertEq = assertEq;
-function assertNeq(left, right) {
+function assertNeq(left, right, message) {
     if (Object.is(left, right)) {
-        throw new Error(`expected ${left.toString()} not to equal ${right.toString()}`);
+        throw build_error(left, right, true, message);
     }
 }
-exports.assertNeq = assertNeq;
-function assertDeepEq(left, right) {
-    if (!deep_cmp_1.equals(left, right)) {
-        throw new Error(`expected ${left.toString()} to equal ${right.toString()}`);
+function assertDeepEq(left, right, message) {
+    if (!(0, deep_cmp_1.equals)(left, right)) {
+        throw build_error(left, right, false, message);
+        ;
     }
 }
-exports.assertDeepEq = assertDeepEq;
-function assertDeepNeq(left, right) {
-    if (deep_cmp_1.equals(left, right)) {
-        throw new Error(`expected ${left.toString()} to equal ${right.toString()}`);
+function assertDeepNeq(left, right, message) {
+    if ((0, deep_cmp_1.equals)(left, right)) {
+        throw build_error(left, right, true, message);
+        ;
     }
 }
-exports.assertDeepNeq = assertDeepNeq;
+function build_error(left, right, not, user_message) {
+    const left_side = `Expected ${left.toString()}`;
+    const right_side = `to equal ${right.toString()}`;
+    return new Error(`${left_side}${not ? "not" : ""}${right_side}.${user_message ?? ""}`);
+}
 async function applyTest(report, test, methodName) {
     return new Promise((resolve) => {
-        setTimeout(() => {
-            let success;
+        setTimeout(async () => {
+            let status;
             let error;
             const method = test[methodName];
             try {
-                Reflect.apply(method, test, []);
+                await Reflect.apply(method, test, []);
                 report.passed += 1;
-                success = true;
+                status = "Passed";
             }
             catch (e) {
                 report.failed += 1;
                 error = e;
-                success = false;
+                status = "Failed";
             }
-            const reportMessage = success ? "Passed" : "Failed";
-            console.log(`${methodName}... ${reportMessage}`);
+            console.log(`${methodName}... ${status}`);
             if (error) {
                 console.log("\n", error.stack, "\n");
             }
@@ -81,4 +87,3 @@ async function runTests(...TestObjects) {
     const { passed, failed } = report;
     console.log(`Passed ${passed}, Failed ${failed}\n`);
 }
-exports.runTests = runTests;
